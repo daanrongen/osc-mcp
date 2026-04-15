@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "osc": {
+      "command": "bunx",
+      "args": ["@daanrongen/osc-mcp"]
+    }
+  }
+}
