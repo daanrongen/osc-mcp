@@ -1,7 +1,11 @@
 import { Schema } from "effect";
 
+/** Canonical OSC type tags — i=int32, f=float32, s=string, b=blob */
+export const OSC_TYPE_TAGS = ["i", "f", "s", "b"] as const;
+export type OscTypeTag = (typeof OSC_TYPE_TAGS)[number];
+
 export class OscArg extends Schema.Class<OscArg>("OscArg")({
-  type: Schema.Literal("i", "f", "s", "b"),
+  type: Schema.Literal(...OSC_TYPE_TAGS),
   value: Schema.Union(Schema.Number, Schema.String),
 }) {}
 

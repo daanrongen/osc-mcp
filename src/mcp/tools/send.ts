@@ -2,12 +2,14 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Effect, type ManagedRuntime } from "effect";
 import { z } from "zod";
 import type { OscConnectionError, OscSendError, OscTimeoutError } from "../../domain/errors.ts";
-import { OscArg, OscBundle, OscMessage } from "../../domain/models.ts";
+import { OSC_TYPE_TAGS, OscArg, OscBundle, OscMessage } from "../../domain/models.ts";
 import { OscClient } from "../../domain/OscClient.ts";
 import { formatError, formatSuccess } from "../utils.ts";
 
+// Zod schema derived from the Effect Schema source of truth in domain/models.ts.
+// OSC_TYPE_TAGS is the single definition of valid type tags — no duplication.
 const OscArgSchema = z.object({
-  type: z.enum(["i", "f", "s", "b"]).describe("OSC type tag: i=int32, f=float32, s=string, b=blob"),
+  type: z.enum(OSC_TYPE_TAGS).describe("OSC type tag: i=int32, f=float32, s=string, b=blob"),
   value: z.union([z.number(), z.string()]).describe("Argument value"),
 });
 
