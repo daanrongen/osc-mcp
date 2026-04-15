@@ -15,7 +15,7 @@ const transport = new StdioServerTransport();
 await server.connect(transport);
 
 const shutdown = async () => {
-  await runtime.runPromise(runtime.disposeEffect);
+  await runtime.dispose();
   process.exit(0);
 };
 
