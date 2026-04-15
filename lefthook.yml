@@ -5,6 +5,7 @@ pre-commit:
       stage_fixed: true
     lint:
       run: bun run lint
+      depends_on: format
 
 pre-push:
   commands:
