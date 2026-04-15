@@ -29,7 +29,6 @@ declare module "osc" {
     packets: (OscMessage | OscBundle)[];
   }
 
-  // biome-ignore lint/suspicious/noUnsafeDeclarationMerging: needed for EventEmitter pattern
   interface UDPPort {
     on(event: "ready", listener: () => void): this;
     on(
@@ -45,7 +44,6 @@ declare module "osc" {
     removeListener(event: string, listener: (...args: never[]) => void): this;
   }
 
-  // biome-ignore lint/suspicious/noUnsafeDeclarationMerging: needed for EventEmitter pattern
   class UDPPort {
     constructor(options?: UDPPortOptions);
     open(): void;
