@@ -1,6 +1,6 @@
 {
   "name": "@daanrongen/osc-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP server for OSC — send and receive Open Sound Control messages over UDP",
   "type": "module",
   "license": "MIT",
