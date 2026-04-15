@@ -1,16 +1,13 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Effect, type ManagedRuntime } from "effect";
 import { z } from "zod";
-import type { OscConnectionError, OscSendError, OscTimeoutError } from "../../domain/errors.ts";
+import type { OscConnectionError } from "../../domain/errors.ts";
 import { OscClient } from "../../domain/OscClient.ts";
-import { formatError, formatSuccess } from "../utils.ts";
+import { runTool } from "../utils.ts";
 
 export const registerListenTools = (
   server: McpServer,
-  runtime: ManagedRuntime.ManagedRuntime<
-    OscClient,
-    OscConnectionError | OscSendError | OscTimeoutError
-  >,
+  runtime: ManagedRuntime.ManagedRuntime<OscClient, OscConnectionError>,
 ) => {
   server.tool(
     "listen",
@@ -31,15 +28,13 @@ export const registerListenTools = (
       idempotentHint: false,
       openWorldHint: true,
     },
-    async ({ address, duration }) => {
-      const result = await runtime.runPromiseExit(
+    async ({ address, duration }) =>
+      runTool(
+        runtime,
         Effect.gen(function* () {
           const client = yield* OscClient;
           return yield* client.listen(address, duration);
         }),
-      );
-      if (result._tag === "Failure") return formatError(result.cause);
-      return formatSuccess(result.value);
-    },
+      ),
   );
 };

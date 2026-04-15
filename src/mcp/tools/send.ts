@@ -1,10 +1,10 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Effect, type ManagedRuntime } from "effect";
 import { z } from "zod";
-import type { OscConnectionError, OscSendError, OscTimeoutError } from "../../domain/errors.ts";
+import type { OscConnectionError } from "../../domain/errors.ts";
 import { OSC_TYPE_TAGS, OscArg, OscBundle, OscMessage } from "../../domain/models.ts";
 import { OscClient } from "../../domain/OscClient.ts";
-import { formatError, formatSuccess } from "../utils.ts";
+import { runTool } from "../utils.ts";
 
 // Zod schema derived from the Effect Schema source of truth in domain/models.ts.
 // OSC_TYPE_TAGS is the single definition of valid type tags — no duplication.
@@ -15,10 +15,7 @@ const OscArgSchema = z.object({
 
 export const registerSendTools = (
   server: McpServer,
-  runtime: ManagedRuntime.ManagedRuntime<
-    OscClient,
-    OscConnectionError | OscSendError | OscTimeoutError
-  >,
+  runtime: ManagedRuntime.ManagedRuntime<OscClient, OscConnectionError>,
 ) => {
   server.tool(
     "send",
@@ -34,8 +31,9 @@ export const registerSendTools = (
       idempotentHint: false,
       openWorldHint: true,
     },
-    async ({ address, args }) => {
-      const result = await runtime.runPromiseExit(
+    async ({ address, args }) =>
+      runTool(
+        runtime,
         Effect.gen(function* () {
           const client = yield* OscClient;
           const msg = new OscMessage({
@@ -45,10 +43,7 @@ export const registerSendTools = (
           yield* client.send(msg);
           return { sent: true, address, argCount: args.length };
         }),
-      );
-      if (result._tag === "Failure") return formatError(result.cause);
-      return formatSuccess(result.value);
-    },
+      ),
   );
 
   server.tool(
@@ -74,8 +69,9 @@ export const registerSendTools = (
       idempotentHint: false,
       openWorldHint: true,
     },
-    async ({ timeTag, packets }) => {
-      const result = await runtime.runPromiseExit(
+    async ({ timeTag, packets }) =>
+      runTool(
+        runtime,
         Effect.gen(function* () {
           const client = yield* OscClient;
           const bundle = new OscBundle({
@@ -93,9 +89,6 @@ export const registerSendTools = (
           yield* client.sendBundle(bundle);
           return { sent: true, packetCount: packets.length };
         }),
-      );
-      if (result._tag === "Failure") return formatError(result.cause);
-      return formatSuccess(result.value);
-    },
+      ),
   );
 };
