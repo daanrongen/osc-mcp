@@ -1,8 +1,8 @@
-import { describe, it } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { Effect } from "effect";
-import { OscArg, OscBundle, OscMessage } from "../../src/domain/models.ts";
-import { OscClient } from "../../src/domain/OscClient.ts";
-import { OscClientTest } from "../../src/infra/OscClientTest.ts";
+import { OscClientTest } from "../infra/OscClientTest.ts";
+import { OscArg, OscBundle, OscMessage } from "./models.ts";
+import { OscClient } from "./OscClient.ts";
 
 describe("send", () => {
   it("send completes without error", async () => {
@@ -77,5 +77,61 @@ describe("send", () => {
         yield* client.sendBundle(bundle);
       }).pipe(Effect.provide(OscClientTest)),
     );
+  });
+});
+
+describe("listen", () => {
+  it("listen with no matching messages fails with OscTimeoutError", async () => {
+    const exit = await Effect.runPromiseExit(
+      Effect.gen(function* () {
+        const client = yield* OscClient;
+        return yield* client.listen("/nonexistent", 0.1);
+      }).pipe(Effect.provide(OscClientTest)),
+    );
+    expect(exit._tag).toBe("Failure");
+  });
+
+  it("listen with wildcard and no messages fails with OscTimeoutError", async () => {
+    const exit = await Effect.runPromiseExit(
+      Effect.gen(function* () {
+        const client = yield* OscClient;
+        return yield* client.listen("*", 0.1);
+      }).pipe(Effect.provide(OscClientTest)),
+    );
+    expect(exit._tag).toBe("Failure");
+  });
+});
+
+describe("status", () => {
+  it("status returns isOpen true", async () => {
+    const result = await Effect.runPromise(
+      Effect.gen(function* () {
+        const client = yield* OscClient;
+        return yield* client.status();
+      }).pipe(Effect.provide(OscClientTest)),
+    );
+    expect(result.isOpen).toBe(true);
+  });
+
+  it("status returns correct local address and port", async () => {
+    const result = await Effect.runPromise(
+      Effect.gen(function* () {
+        const client = yield* OscClient;
+        return yield* client.status();
+      }).pipe(Effect.provide(OscClientTest)),
+    );
+    expect(result.localAddress).toBe("127.0.0.1");
+    expect(result.localPort).toBe(57121);
+  });
+
+  it("status returns correct remote address and port", async () => {
+    const result = await Effect.runPromise(
+      Effect.gen(function* () {
+        const client = yield* OscClient;
+        return yield* client.status();
+      }).pipe(Effect.provide(OscClientTest)),
+    );
+    expect(result.remoteAddress).toBe("127.0.0.1");
+    expect(result.remotePort).toBe(57110);
   });
 });
