@@ -1,12 +1,10 @@
 #!/usr/bin/env bun
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { Layer, ManagedRuntime } from "effect";
+import { ManagedRuntime } from "effect";
 import { OscClientLive } from "./infra/OscClientLive.ts";
 import { createMcpServer } from "./mcp/server.ts";
 
-const layer = Layer.mergeAll(OscClientLive);
-
-const runtime = ManagedRuntime.make(layer);
+const runtime = ManagedRuntime.make(OscClientLive);
 
 const server = createMcpServer(runtime);
 
