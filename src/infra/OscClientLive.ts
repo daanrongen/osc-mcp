@@ -31,10 +31,7 @@ export const OscClientLive = Layer.scoped(
         );
         port.open();
       }),
-      (port) =>
-        Effect.sync(() => {
-          port.close();
-        }),
+      (port) => Ref.set(isOpenRef, false).pipe(Effect.andThen(Effect.sync(() => port.close()))),
     );
 
     yield* Ref.set(isOpenRef, true);
