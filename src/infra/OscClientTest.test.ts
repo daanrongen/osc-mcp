@@ -73,28 +73,26 @@ describe("makeOscClientTest", () => {
     );
   });
 
-  it("listen fails with OscTimeoutError when no canned response is registered", async () => {
-    const exit = await Effect.runPromiseExit(
-      Effect.gen(function* () {
-        const { service } = yield* makeOscClientTest;
-        return yield* service.listen("/unknown", 0.1);
-      }),
-    );
-    expect(exit._tag).toBe("Failure");
-  });
-
-  it("listen fails with OscTimeoutError containing correct address and duration", async () => {
+  it("listen returns empty result when no canned response is registered", async () => {
     await Effect.runPromise(
       Effect.gen(function* () {
         const { service } = yield* makeOscClientTest;
-        const result = yield* Effect.either(service.listen("/missing", 2.5));
-        if (result._tag === "Left") {
-          expect(result.left._tag).toBe("OscTimeoutError");
-          expect(result.left.address).toBe("/missing");
-          expect(result.left.duration).toBe(2.5);
-        } else {
-          throw new Error("Expected failure but got success");
-        }
+        const result = yield* service.listen("/unknown", 0.1);
+        expect(result.messages).toHaveLength(0);
+        expect(result.address).toBe("/unknown");
+        expect(result.duration).toBe(0.1);
+      }),
+    );
+  });
+
+  it("listen returns empty result with correct address and duration when no messages", async () => {
+    await Effect.runPromise(
+      Effect.gen(function* () {
+        const { service } = yield* makeOscClientTest;
+        const result = yield* service.listen("/missing", 2.5);
+        expect(result.messages).toHaveLength(0);
+        expect(result.address).toBe("/missing");
+        expect(result.duration).toBe(2.5);
       }),
     );
   });

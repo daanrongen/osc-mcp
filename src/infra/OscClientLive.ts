@@ -1,7 +1,7 @@
 import { Effect, Layer, Ref } from "effect";
 import osc from "osc";
 import { OscConfig } from "../config.ts";
-import { OscConnectionError, OscSendError, OscTimeoutError } from "../domain/errors.ts";
+import { OscConnectionError, OscSendError } from "../domain/errors.ts";
 import { ConnectionStatus, ListenResult, OscArg, OscMessage } from "../domain/models.ts";
 import { OscClient } from "../domain/OscClient.ts";
 
@@ -63,7 +63,7 @@ export const OscClientLive = Layer.scoped(
         }),
 
       listen: (address, duration) =>
-        Effect.async<ListenResult, OscTimeoutError>((resume) => {
+        Effect.async<ListenResult>((resume) => {
           const collected: OscMessage[] = [];
 
           const handler = (msg: {
@@ -90,11 +90,7 @@ export const OscClientLive = Layer.scoped(
 
           const timer = setTimeout(() => {
             udpPort.removeListener("message", handler);
-            if (collected.length === 0) {
-              resume(Effect.fail(new OscTimeoutError({ address, duration })));
-            } else {
-              resume(Effect.succeed(new ListenResult({ address, messages: collected, duration })));
-            }
+            resume(Effect.succeed(new ListenResult({ address, messages: collected, duration })));
           }, duration * 1000);
 
           return Effect.sync(() => {
