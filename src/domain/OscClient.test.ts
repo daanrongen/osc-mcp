@@ -81,24 +81,26 @@ describe("send", () => {
 });
 
 describe("listen", () => {
-  it("listen with no matching messages fails with OscTimeoutError", async () => {
-    const exit = await Effect.runPromiseExit(
+  it("listen with no matching messages returns empty result", async () => {
+    const result = await Effect.runPromise(
       Effect.gen(function* () {
         const client = yield* OscClient;
         return yield* client.listen("/nonexistent", 0.1);
       }).pipe(Effect.provide(OscClientTest)),
     );
-    expect(exit._tag).toBe("Failure");
+    expect(result.messages).toHaveLength(0);
+    expect(result.address).toBe("/nonexistent");
   });
 
-  it("listen with wildcard and no messages fails with OscTimeoutError", async () => {
-    const exit = await Effect.runPromiseExit(
+  it("listen with wildcard and no messages returns empty result", async () => {
+    const result = await Effect.runPromise(
       Effect.gen(function* () {
         const client = yield* OscClient;
         return yield* client.listen("*", 0.1);
       }).pipe(Effect.provide(OscClientTest)),
     );
-    expect(exit._tag).toBe("Failure");
+    expect(result.messages).toHaveLength(0);
+    expect(result.address).toBe("*");
   });
 });
 

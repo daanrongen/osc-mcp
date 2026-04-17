@@ -1,5 +1,4 @@
 import { Effect, Layer, Ref } from "effect";
-import { OscTimeoutError } from "../domain/errors.ts";
 import {
   ConnectionStatus,
   ListenResult,
@@ -22,9 +21,6 @@ export const makeOscClientTest = Effect.gen(function* () {
       Effect.gen(function* () {
         const responses = yield* Ref.get(cannedResponses);
         const msgs = responses.get(address) ?? [];
-        if (msgs.length === 0) {
-          return yield* Effect.fail(new OscTimeoutError({ address, duration }));
-        }
         return new ListenResult({ address, messages: msgs, duration });
       }),
 
